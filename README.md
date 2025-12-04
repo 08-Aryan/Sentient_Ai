@@ -2,28 +2,71 @@
 
 A production-grade, context-aware chatbot that performs real-time sentiment analysis and adapts its responses based on the conversation's emotional trajectory.
 
-## 🛠️ Installation & Setup requirements
+## 🌟 Features
 
-### **NLTK VADER Logic (Zero-Dependency)**
-This application utilizes the **NLTK (Natural Language Toolkit) VADER** sentiment analysis algorithm.
+-   **Real-Time Sentiment Analysis**: Analyzes user input instantly using a hybrid approach (Local + Backend).
+-   **Context-Aware Responses**: Adapts bot persona based on the conversation history and emotional context.
+-   **Visual Feedback**: Dynamic UI that changes colors and gradients based on the current mood (Blue/Green/Red).
+-   **Session Analytics**: Generates a comprehensive summary report with emotional trends and charts at the end of the session.
+-   **Dockerized**: Fully containerized for easy deployment.
 
-*   **No Python Installation Required:** The VADER lexicon and scoring logic have been ported to TypeScript (`utils/sentimentLexicon.ts`).
-*   **No `pip install nltk` Required:** Unlike standard Python implementations, this web application runs entirely in the browser.
-*   **No API Key Required:** The default mode uses the local "Local Intelligence" engine.
+## 🛠️ Tech Stack
 
+-   **Frontend**: React, TypeScript, Vite, Tailwind CSS
+-   **Backend**: Python, Flask, Scikit-learn, NLTK VADER
+-   **Deployment**: Docker, Docker Compose
 
-# 1. Install
+## 🚀 Getting Started
+
+### Prerequisites
+
+-   Node.js (v18+)
+-   Python (v3.10+)
+-   Docker & Docker Compose (optional, for containerized run)
+
+### Option 1: Run Locally
+
+#### 1. Backend Setup
+```bash
+cd backend
+# Create virtual environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the server
+python app.py
+```
+The backend will start on `http://localhost:5001`.
+
+#### 2. Frontend Setup
+```bash
+cd frontend
+# Install dependencies
 npm install
 
-# 2. Run
+# Run the development server
 npm run dev
+```
+The frontend will start on `http://localhost:3000`.
 
----
+### Option 2: Run with Docker (Recommended)
 
-## 🧠 Core Logic & Architecture
+Run the entire application with a single command:
 
-### **The Context Matrix**
-The bot does not simply respond to your last message. It maintains a **Conversation State** to ensure emotional consistency.
+```bash
+docker-compose up --build
+```
+
+-   **Frontend**: `http://localhost:3000`
+-   **Backend**: `http://localhost:5001`
+
+## 🧠 Core Logic
+
+### The Context Matrix
+The bot maintains a **Conversation State** to ensure emotional consistency.
 
 | Current Input | Overall Mood (History) | Bot Persona | Example Response |
 | :--- | :--- | :--- | :--- |
@@ -32,20 +75,24 @@ The bot does not simply respond to your last message. It maintains a **Conversat
 | **Negative** | **Positive** | Surprised/Helpful | "Oh no, we were doing so well. Let me fix this immediately." |
 | **Negative** | **Negative** | Apologetic | "I understand your frustration is growing. I am committed to fixing this." |
 
-### **Tier Features**
+## 📂 Project Structure
 
-**Tier 1: Persistence & Summary**
-*   Full conversation history is tracked.
-*   On exit, a **Summary Report** is generated displaying the overall sentiment score, total message count, and a visual chart of the sentiment trajectory.
+```
+├── backend/                # Flask API & Sentiment Analysis
+│   ├── app.py              # Main application entry point
+│   ├── requirements.txt    # Python dependencies
+│   └── Dockerfile          # Backend container config
+│
+├── frontend/               # React Application
+│   ├── src/                # Source code
+│   │   ├── components/     # UI Components
+│   │   ├── services/       # API Services
+│   │   └── utils/          # Helper functions
+│   └── Dockerfile          # Frontend container config
+│
+└── docker-compose.yml      # Orchestration for both services
+```
 
-**Tier 2: Real-Time Analysis & Trends**
-*   **Instant Feedback:** Every user message is analyzed immediately for sentiment (Positive/Neutral/Negative) and displayed in the UI.
-*   **Mood Trend:** The app calculates whether the conversation is **Improving**, **Declining**, or **Stable** by comparing the first half of the conversation to the second half.
+## 📝 License
 
----
-
-## 🚀 Usage
-
-1.  **Chat:** Type messages naturally. The bot will analyze your sentiment in real-time.
-2.  **Visual Indicators:** Watch the "Live Mood" badge in the header update as the conversation context shifts.
-3.  **Summary:** Click **End Chat** (or type "exit") to view the comprehensive analytical report.
+This project is open-source and available under the MIT License.
