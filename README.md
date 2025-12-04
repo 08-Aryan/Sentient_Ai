@@ -63,6 +63,28 @@ docker-compose up --build
 -   **Frontend**: `http://localhost:3000`
 -   **Backend**: `http://localhost:5001`
 
+## 🐳 Containerization
+
+The application is fully containerized to ensure consistency across environments.
+
+### Architecture
+-   **Backend**: Built on `python:3.10-slim`. Installs dependencies and runs the Flask API.
+-   **Frontend**: Uses a **multi-stage build**:
+    1.  **Build Stage**: `node:18-alpine` compiles the React/Vite app.
+    2.  **Serve Stage**: `nginx:alpine` serves the static files on port 80.
+-   **Orchestration**: `docker-compose` manages the networking and startup order.
+
+### Manual Build (Optional)
+If you wish to build images individually:
+
+```bash
+# Backend
+docker build -t sentiment-backend ./backend
+
+# Frontend
+docker build -t sentiment-frontend ./frontend
+```
+
 ## 🧠 Core Logic
 
 ### The Context Matrix
