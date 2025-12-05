@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface LoginProps {
-    onRegisterClick: () => void;
+    onRegisterClick: () => void; // Kept for compatibility if needed, but we'll use Link
 }
 
-const Login: React.FC<LoginProps> = ({ onRegisterClick }) => {
+const Login: React.FC<LoginProps> = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -95,9 +96,9 @@ const Login: React.FC<LoginProps> = ({ onRegisterClick }) => {
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-400">
                         Don't have an account?{' '}
-                        <button onClick={onRegisterClick} className="text-sky-400 hover:text-sky-300 font-medium">
+                        <Link to="/register" className="text-sky-400 hover:text-sky-300 font-medium">
                             Create one
-                        </button>
+                        </Link>
                     </p>
                 </div>
             </div>

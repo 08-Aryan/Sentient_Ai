@@ -25,7 +25,7 @@ export const useSession = () => {
         }
     }, [user, fetchLimit]);
 
-    const saveSession = async (stats: ConversationStats) => {
+    const saveSession = async (stats: ConversationStats, messages: any[]) => {
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             await fetch(`${API_URL}/chat/end`, {
@@ -37,6 +37,7 @@ export const useSession = () => {
                     averageScore: stats.averageScore,
                     overallMood: stats.overallMoodLabel,
                     trend: stats.trend,
+                    messages: messages
                 })
             });
             fetchLimit();

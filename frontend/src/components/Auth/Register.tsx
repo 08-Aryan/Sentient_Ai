@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface RegisterProps {
     onLoginClick: () => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ onLoginClick }) => {
+const Register: React.FC<RegisterProps> = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +31,7 @@ const Register: React.FC<RegisterProps> = ({ onLoginClick }) => {
             if (res.ok) {
                 setSuccess('Account created! You can now log in.');
                 setTimeout(() => {
-                    onLoginClick();
+                    navigate('/login');
                 }, 1500);
             } else {
                 setError(data.message || 'Registration failed');
@@ -94,9 +96,9 @@ const Register: React.FC<RegisterProps> = ({ onLoginClick }) => {
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-400">
                         Already have an account?{' '}
-                        <button onClick={onLoginClick} className="text-sky-400 hover:text-sky-300 font-medium">
+                        <Link to="/login" className="text-sky-400 hover:text-sky-300 font-medium">
                             Sign in
-                        </button>
+                        </Link>
                     </p>
                 </div>
             </div>

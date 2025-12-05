@@ -14,14 +14,10 @@ const INITIAL_MESSAGE: Message = {
 export const useChat = (onEndChat: () => void) => {
     const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
     const [botStatus, setBotStatus] = useState<'idle' | 'analyzing' | 'typing'>('idle');
+    const [sessionId, setSessionId] = useState<string | null>(null);
 
     const handleSendMessage = useCallback(async (text: string, remainingSessions: number | null) => {
         if (!text.trim() || botStatus !== 'idle') return;
-
-        if (remainingSessions !== null && remainingSessions <= 0 && messages.length <= 1) {
-            alert("You have reached your daily limit of 10 sessions.");
-            return;
-        }
 
         // 1. Optimistic UI Update
         const tempId = Date.now().toString();
@@ -71,11 +67,57 @@ export const useChat = (onEndChat: () => void) => {
         // --- Intent: CHAT ---
         setBotStatus('analyzing');
         try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            let currentSessionId = sessionId;
+
+            // Start session if not exists
+            if (!currentSessionId) {
+                try {
+                    const startRes = await fetch(`${API_URL}/chat/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+
+                    if (!startRes.ok) {
+                        if (startRes.status === 403) throw new Error('Daily limit reached');
+                        if (startRes.status === 401) throw new Error('Authentication required');
+                        throw new Error(`Failed to start session: ${startRes.status}`);
+                    }
+                    const startData = await startRes.json();
+                    currentSessionId = startData.session_id;
+                    setSessionId(currentSessionId);
+                } catch (err: any) {
+                    console.error("Session start error:", err);
+                    setBotStatus('idle');
+                    if (err.message === 'Authentication required') {
+                        alert("Please log in to start a chat.");
+                        // Optional: Redirect to login or show login modal
+                    } else {
+                        alert(err.message || "Failed to start a new chat session. Please try again.");
+                    }
+                    return; // Stop execution if session start fails
+                }
+            }
+
             const sentiment = await analyzeSentiment(text);
 
             setMessages(prev => prev.map(msg =>
                 msg.id === tempId ? { ...msg, sentiment } : msg
             ));
+
+            // Save User Message
+            await fetch(`${API_URL}/chat/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    session_id: currentSessionId,
+                    role: 'user',
+                    content: text,
+                    sentiment: sentiment
+                })
+            });
 
             const updatedMessagesForStats = [...messages, { ...userMsg, sentiment }];
             const newStats = calculateConversationStats(updatedMessagesForStats);
@@ -103,20 +145,40 @@ export const useChat = (onEndChat: () => void) => {
 
             setMessages(prev => [...prev, botMsg]);
 
+            // Save Bot Message
+            await fetch(`${API_URL}/chat/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    session_id: currentSessionId,
+                    role: 'bot',
+                    content: botReplyText
+                })
+            });
+
         } catch (error: any) {
             console.error("Interaction failed", error);
             if (error.message === 'Daily limit reached') {
-                alert("You have reached your daily limit of 10 sessions.");
+                alert("You have reached your daily limit of 20 sessions.");
+            } else if (error.message === 'Session message limit reached') { // Backend might return this
+                alert("You have reached the message limit for this session.");
             }
             setBotStatus('idle');
         } finally {
             setBotStatus('idle');
         }
-    }, [botStatus, messages, onEndChat]);
+    }, [botStatus, messages, onEndChat, sessionId]);
 
     const restartChat = () => {
         setMessages([INITIAL_MESSAGE]);
+        setSessionId(null);
     };
 
-    return { messages, botStatus, handleSendMessage, restartChat };
+    const loadMessages = (msgs: Message[], sessId: string) => {
+        setMessages(msgs);
+        setSessionId(sessId);
+    };
+
+    return { messages, botStatus, handleSendMessage, restartChat, loadMessages, sessionId };
 };
