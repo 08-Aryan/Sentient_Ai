@@ -1,5 +1,5 @@
 import React from 'react';
-import { ConversationStats, SentimentLabel, TrendDirection, ChartDataPoint } from '../../types';
+import { ConversationStats, SentimentLabel, TrendDirection, ChartDataPoint } from '../types';
 import { X, RefreshCcw, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 

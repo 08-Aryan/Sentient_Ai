@@ -18,10 +18,14 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({ text }),
     });
 
     if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error('Daily limit reached');
+      }
       throw new Error('Network response was not ok');
     }
 
@@ -51,7 +55,10 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
       score
     };
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message === 'Daily limit reached') {
+      throw error;
+    }
     console.error("Sentiment analysis failed:", error);
     // Fallback to neutral if API fails
     return { label: SentimentLabel.NEUTRAL, score: 0 };

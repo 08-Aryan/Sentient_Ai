@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Message, SentimentLabel } from '../../types';
+import { Message, SentimentLabel } from '../types';
 import { Bot, User, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface ChatMessageProps {
