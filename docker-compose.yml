@@ -3,16 +3,18 @@ version: '3.8'
 services:
   backend:
     build: ./backend
-    ports:
-      - "5001:5001"
+    # ports: - "5001:5001" # Backend is now internal only
     environment:
       - FLASK_ENV=production
+      - DATABASE_URL=sqlite:////app/instance/chatbot.db
+      - SECRET_KEY=prod_secret_key_change_this
     volumes:
       - ./backend:/app
+      - ./backend/instance:/app/instance # Persist DB
 
   frontend:
     build: ./frontend
     ports:
-      - "3000:80"
+      - "3000:80" # Map host 3000 to container 80 (nginx)
     depends_on:
       - backend
