@@ -4,6 +4,7 @@ services:
   backend:
     build: ./backend
     # ports: - "5001:5001" # Backend is now internal only
+    restart: always
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=sqlite:////app/instance/chatbot.db
@@ -14,6 +15,7 @@ services:
 
   frontend:
     build: ./frontend
+    restart: always
     ports:
       - "3000:80" # Map host 3000 to container 80 (nginx)
     depends_on:

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Message, ConversationStats } from '../types';
 import { analyzeSentiment, generateBotReply } from '../services/services';
+import { api } from '../services/api';
 import { calculateConversationStats } from '../utils/analytics';
 import { detectIntent, CAPABILITY_RESPONSE, GENERIC_FAREWELLS } from '../utils/responseTemplates';
 
@@ -67,24 +68,12 @@ export const useChat = (onEndChat: () => void) => {
         // --- Intent: CHAT ---
         setBotStatus('analyzing');
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             let currentSessionId = sessionId;
 
             // Start session if not exists
             if (!currentSessionId) {
                 try {
-                    const startRes = await fetch(`${API_URL}/chat/start`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include'
-                    });
-
-                    if (!startRes.ok) {
-                        if (startRes.status === 403) throw new Error('Daily limit reached');
-                        if (startRes.status === 401) throw new Error('Authentication required');
-                        throw new Error(`Failed to start session: ${startRes.status}`);
-                    }
-                    const startData = await startRes.json();
+                    const startData = await api.startChat();
                     currentSessionId = startData.session_id;
                     setSessionId(currentSessionId);
                 } catch (err: any) {
@@ -92,7 +81,6 @@ export const useChat = (onEndChat: () => void) => {
                     setBotStatus('idle');
                     if (err.message === 'Authentication required') {
                         alert("Please log in to start a chat.");
-                        // Optional: Redirect to login or show login modal
                     } else {
                         alert(err.message || "Failed to start a new chat session. Please try again.");
                     }
@@ -107,23 +95,16 @@ export const useChat = (onEndChat: () => void) => {
             ));
 
             // Save User Message
-            await fetch(`${API_URL}/chat/message`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    session_id: currentSessionId,
-                    role: 'user',
-                    content: text,
-                    sentiment: sentiment
-                })
-            });
+            // We use 'currentSessionId!' because we returned if it failed above
+            await api.sendMessage(currentSessionId!, 'user', text, sentiment);
 
             const updatedMessagesForStats = [...messages, { ...userMsg, sentiment }];
             const newStats = calculateConversationStats(updatedMessagesForStats);
 
             setBotStatus('typing');
 
+            // --- BOT REPLY GENERATION ---
+            // Construct history for the AI service if needed (Gemini style)
             const geminiHistory = updatedMessagesForStats.map(m => ({
                 role: m.role === 'user' ? 'user' : 'model',
                 parts: [{ text: m.text }]
@@ -146,22 +127,13 @@ export const useChat = (onEndChat: () => void) => {
             setMessages(prev => [...prev, botMsg]);
 
             // Save Bot Message
-            await fetch(`${API_URL}/chat/message`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    session_id: currentSessionId,
-                    role: 'bot',
-                    content: botReplyText
-                })
-            });
+            await api.sendMessage(currentSessionId!, 'bot', botReplyText);
 
         } catch (error: any) {
             console.error("Interaction failed", error);
             if (error.message === 'Daily limit reached') {
                 alert("You have reached your daily limit of 20 sessions.");
-            } else if (error.message === 'Session message limit reached') { // Backend might return this
+            } else if (error.message === 'Session message limit reached') {
                 alert("You have reached the message limit for this session.");
             }
             setBotStatus('idle');
