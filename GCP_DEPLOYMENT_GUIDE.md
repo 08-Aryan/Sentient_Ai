@@ -77,11 +77,12 @@ cd app
 ```bash
 nano backend/.env
 ```
-Paste your production config:
+Paste your production config (adjust YOUR_EXTERNAL_IP):
 ```env
 FLASK_ENV=production
 SECRET_KEY=put_a_long_secret_random_string_here
 DATABASE_URL=sqlite:////app/instance/chatbot.db
+CORS_ORIGINS=http://localhost:3000,http://<YOUR_EXTERNAL_IP>:3000
 ```
 Press `Ctrl+X`, `Y`, `Enter` to save.
 
