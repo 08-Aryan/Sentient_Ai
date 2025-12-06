@@ -74,14 +74,16 @@ cd app
 *Note: If your repo is private, you'll need to generate a Personal Access Token (PAT) on GitHub and use it as the password.*
 
 **3. Configure Environment:**
+
+Create a `.env` file in the root directory (same folder as `docker-compose.yml`):
 ```bash
-nano backend/.env
+nano .env
 ```
 Paste your production config:
 ```env
 FLASK_ENV=production
 SECRET_KEY=put_a_long_secret_random_string_here
-DATABASE_URL=sqlite:////app/instance/chatbot.db
+# DATABASE_URL is already set in docker-compose, but you can override here if needed
 ```
 Press `Ctrl+X`, `Y`, `Enter` to save.
 
