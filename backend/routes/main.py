@@ -22,7 +22,7 @@ def predict(current_user):
     ).count()
 
     # Soft check, frontend handles blocking mostly
-    if session_count >= 10:
+    if session_count >= 20:
         return jsonify({'error': 'Daily limit reached'}), 403
 
     try:

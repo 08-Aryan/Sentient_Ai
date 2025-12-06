@@ -42,8 +42,11 @@ def save_message(current_user):
     if session.total_messages >= 250:
         return jsonify({'error': 'Session message limit reached'}), 403
 
-    new_message = ChatService.save_message(session, role, content, sentiment)
-    return jsonify({'message': 'Message saved', 'id': new_message.id})
+    try:
+        new_message = ChatService.save_message(session, role, content, sentiment)
+        return jsonify({'message': 'Message saved', 'id': new_message.id})
+    except Exception as e:
+        return jsonify({'error': 'Failed to save message'}), 500
 
 @chat_bp.route('/end', methods=['POST'])
 @token_required

@@ -131,10 +131,15 @@ export const useChat = (onEndChat: () => void) => {
 
         } catch (error: any) {
             console.error("Interaction failed", error);
+            // Rollback optimistic update
+            setMessages(prev => prev.filter(msg => msg.id !== tempId));
+
             if (error.message === 'Daily limit reached') {
                 alert("You have reached your daily limit of 20 sessions.");
             } else if (error.message === 'Session message limit reached') {
                 alert("You have reached the message limit for this session.");
+            } else {
+                alert("Failed to send message. Please try again.");
             }
             setBotStatus('idle');
         } finally {

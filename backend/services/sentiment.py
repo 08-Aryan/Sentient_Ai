@@ -12,18 +12,19 @@ class SentimentService:
         self.load_model()
 
     def load_model(self):
-        if not os.path.exists(Config.ARTIFACT_PATH):
-            print(f"ERROR: Artifact file '{Config.ARTIFACT_PATH}' not found.")
-            return
-
-        print("Loading model artifacts...")
         try:
+            if not os.path.exists(Config.ARTIFACT_PATH):
+                raise FileNotFoundError(f"Artifact file '{Config.ARTIFACT_PATH}' not found.")
+
+            print("Loading model artifacts...")
             artifacts = joblib.load(Config.ARTIFACT_PATH)
             self.model = artifacts['model']
             self.vectorizer = artifacts['vectorizer']
             print("Model and Vectorizer loaded successfully.")
         except Exception as e:
             print(f"ERROR: Failed to load artifacts: {e}")
+            self.model = None
+            self.vectorizer = None
 
     def clean_text(self, text):
         if not isinstance(text, str):

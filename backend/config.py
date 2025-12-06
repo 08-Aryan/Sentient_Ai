@@ -16,6 +16,8 @@ class Config:
     
     SQLALCHEMY_DATABASE_URI = _db_url or f'sqlite:///{os.path.join(project_root, "instance", "chatbot.db")}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ECHO = os.getenv('SQLALCHEMY_ECHO', 'False').lower() == 'true' # Useful for local debugging
+    
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV') == 'production'
     SESSION_COOKIE_SAMESITE = 'Lax'

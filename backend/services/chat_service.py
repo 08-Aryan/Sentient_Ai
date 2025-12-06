@@ -14,17 +14,21 @@ class ChatService:
 
     @staticmethod
     def create_session(user_id):
-        new_session = ChatSession(
-            user_id=user_id,
-            title="New Chat",
-            total_messages=0,
-            average_score=0.0,
-            overall_mood='Neutral',
-            trend='Stable'
-        )
-        db.session.add(new_session)
-        db.session.commit()
-        return new_session
+        try:
+            new_session = ChatSession(
+                user_id=user_id,
+                title="New Chat",
+                total_messages=0,
+                average_score=0.0,
+                overall_mood='Neutral',
+                trend='Stable'
+            )
+            db.session.add(new_session)
+            db.session.commit()
+            return new_session
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     @staticmethod
     def get_session(session_id, user_id):
@@ -52,8 +56,12 @@ class ChatService:
         if role == 'user' and session.total_messages <= 2:
             session.title = ' '.join(content.split()[:5])
 
-        db.session.commit()
-        return new_message
+        try:
+            db.session.commit()
+            return new_message
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     @staticmethod
     def update_session_stats(session, data):
