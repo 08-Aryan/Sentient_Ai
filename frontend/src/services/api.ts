@@ -1,6 +1,6 @@
 import { SentimentResult } from "../types";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const API_URL = import.meta.env.VITE_API_URL || ''; // Relative path for proxy
 
 const getHeaders = () => ({
     'Content-Type': 'application/json',
@@ -66,6 +66,16 @@ export const api = {
 
     getSessionMessages: async (sessionId: string) => {
         const res = await fetch(`${API_URL}/chat/session/${sessionId}`, { credentials: 'include' });
+        return handleResponse(res);
+    },
+
+    predict: async (text: string) => {
+        const res = await fetch(`${API_URL}/predict`, {
+            method: 'POST',
+            headers: getHeaders(),
+            credentials: 'include',
+            body: JSON.stringify({ text })
+        });
         return handleResponse(res);
     }
 };

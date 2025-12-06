@@ -1,6 +1,7 @@
 import { SentimentLabel, SentimentResult } from "../types";
 // import { analyzeLocalSentiment } from "../utils/sentimentLexicon";
 import { getLocalBotReply } from "../utils/responseTemplates";
+import { api } from "./api";
 
 /**
  * SERVICE LAYER: The "Brain" of the application.
@@ -12,24 +13,7 @@ import { getLocalBotReply } from "../utils/responseTemplates";
 
 export const analyzeSentiment = async (text: string): Promise<SentimentResult> => {
   try {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-    const response = await fetch(`${API_URL}/predict`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ text }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 403) {
-        throw new Error('Daily limit reached');
-      }
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
+    const data = await api.predict(text);
 
     // Map backend response to SentimentResult
     // Backend returns: { sentiment: 'positive'|'negative'|'neutral', probability: 0.95 }
@@ -38,13 +22,6 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
     let label = SentimentLabel.NEUTRAL;
     if (data.sentiment === 'positive') label = SentimentLabel.POSITIVE;
     else if (data.sentiment === 'negative') label = SentimentLabel.NEGATIVE;
-
-    // Normalize score to -1 to 1 range for compatibility with existing logic if needed,
-    // or just use the probability as is if the app handles 0-1.
-    // Looking at existing code, it seems to use a score.
-    // Let's assume the probability is confidence.
-    // We might need to map it to a signed score for the "overall mood" calculation.
-    // If positive, score is prob. If negative, score is -prob.
 
     let score = data.probability;
     if (label === SentimentLabel.NEGATIVE) score = -score;
