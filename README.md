@@ -9,22 +9,19 @@ A sophisticated chatbot application that persists conversation history, analyzes
 - **Session Management**: Persists chat sessions and history.
 - **Usage Limits**: Enforces daily session limits (20 sessions/day) for free tier management.
 - **Secure Authentication**: JWT-based login and registration.
-- **Dockerized**: Ready for production with Nginx and Gunicorn.
 
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Vite, TailwindCSS (presumed), Recharts (Analytics).
 - **Backend**: Flask, SQLAlchemy (SQLite), Scikit-learn (Sentiment Model).
-- **Infrastructure**: Docker, Docker Compose, Nginx.
 
 ## Installation
 
 ### Prerequisites
 - Node.js & npm
 - Python 3.10+
-- Docker (optional, for containerized run)
 
-### Option 1: Local Development
+### Local Development
 
 1.  **Clone the repository**:
     ```bash
@@ -54,31 +51,20 @@ A sophisticated chatbot application that persists conversation history, analyzes
     ```
     Frontend runs on `http://localhost:3000`.
 
-### Option 2: Docker (Production)
+## Deployment (Optional)
 
-To run the full stack (Frontend + Backend + DB) in containers:
-
-```bash
-docker-compose up --build -d
-```
-Access the app at `http://localhost:3000`.
+- **Render & Vercel**: See [DEPLOYMENT_RENDER_VERCEL.md](DEPLOYMENT_RENDER_VERCEL.md) for a production-ready cloud setup.
 
 ## Configuration
 
-Security is handled via environment variables.
+Security is handled via environment variables (defaults provided for local dev).
 
-### Required Variables
-| Variable | Description | Default (Dev) |
+### Variables
+| Variable | Description | Default (Local) |
 |----------|-------------|---------------|
-| `SECRET_KEY` | Secures sessions & tokens | `dev_secret_key` |
+| `SECRET_KEY` | Secures sessions & tokens | `dev_secret_key_local_fallback` |
 | `FLASK_ENV` | Toggle Debug/Prod mode | `development` |
 | `GEMINI_API_KEY` | (Optional) For AI features | User Provided |
-
-**Production Tip**: When deploying with Docker, set these in your server environment or a `.env` file (not committed to git).
-
-## Cloud Deployment
-
-- **Google Cloud (Free Tier)**: See [GCP_DEPLOYMENT_GUIDE.md](GCP_DEPLOYMENT_GUIDE.md).
 
 ## Usage
 

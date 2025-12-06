@@ -4,17 +4,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev_secret_key_change_this')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev_secret_key_local_fallback')
     basedir = os.path.abspath(os.path.dirname(__file__))
     # Go up one level from 'backend' to get to project root, then into 'instance'
-    # Assuming the structure is:
-    # project_root/
-    #   backend/config.py
-    #   instance/chatbot.db
     project_root = os.path.dirname(basedir)
     
-    # Use absolute path for DB
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f'sqlite:///{os.path.join(project_root, "instance", "chatbot.db")}')
+    # Database URL: Handle Render's "postgres://" (deprecated in SQLAlchemy) -> "postgresql://"
+    _db_url = os.getenv('DATABASE_URL')
+    if _db_url and _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = _db_url or f'sqlite:///{os.path.join(project_root, "instance", "chatbot.db")}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV') == 'production'
