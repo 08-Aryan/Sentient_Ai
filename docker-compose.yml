@@ -7,8 +7,8 @@ services:
     restart: always
     environment:
       - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY}
       - DATABASE_URL=sqlite:////app/instance/chatbot.db
-      - SECRET_KEY=prod_secret_key_change_this
     volumes:
       - ./backend:/app
       - ./backend/instance:/app/instance # Persist DB

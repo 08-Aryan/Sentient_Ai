@@ -63,6 +63,19 @@ docker-compose up --build -d
 ```
 Access the app at `http://localhost:3000`.
 
+## Configuration
+
+Security is handled via environment variables.
+
+### Required Variables
+| Variable | Description | Default (Dev) |
+|----------|-------------|---------------|
+| `SECRET_KEY` | Secures sessions & tokens | `dev_secret_key` |
+| `FLASK_ENV` | Toggle Debug/Prod mode | `development` |
+| `GEMINI_API_KEY` | (Optional) For AI features | User Provided |
+
+**Production Tip**: When deploying with Docker, set these in your server environment or a `.env` file (not committed to git).
+
 ## Cloud Deployment
 
 - **Google Cloud (Free Tier)**: See [GCP_DEPLOYMENT_GUIDE.md](GCP_DEPLOYMENT_GUIDE.md).
