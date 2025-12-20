@@ -25,6 +25,9 @@ venv/
 .env
 instance/
 .pytest_cache/
+.coverage
+htmlcov/
+backend/instance/
 
 # Node
 node_modules/

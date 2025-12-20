@@ -46,6 +46,13 @@ Ensure all your specific configuration changes (like the recent `vercel.json` ad
     -   Add `DATABASE_URL` and paste the `Internal Database URL`.
     -   Save Changes. Render will redeploy.
 
+### Seeding the Production Database (Critical)
+Since we moved responses to the database, you must populate it once deployed:
+1.  Go to your **Web Service** dashboard on Render.
+2.  Click the **Shell** tab (left sidebar).
+3.  Run: `python seed_templates.py`
+4.  You should see "Successfully added X templates" or "Skipping seed".
+
 **Copy Backend URL**: Once deployed, copy the URL (e.g., `https://sentiment-chatbot-backend.onrender.com`). You need this for Vercel.
 
 ---

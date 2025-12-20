@@ -1,73 +1,82 @@
 # Context-Aware Sentiment Chatbot
 
-A sophisticated chatbot application that persists conversation history, analyzes sentiment in real-time, and provides context-aware responses.
+A production-ready, full-stack chatbot with real-time sentiment analysis, persistent memory, and a modern "Black & Blue" aesthetic.
 
-## Features
+## 🏗 Architecture
 
-- **Real-Time Sentiment Analysis**: Analyzes user input to determine mood (Positive, Negative, Neutral).
-- **Context-Aware Responses**: Adjusts bot personality based on the conversation's overall mood.
-- **Session Management**: Persists chat sessions and history.
-- **Usage Limits**: Enforces daily session limits (20 sessions/day) for free tier management.
-- **Secure Authentication**: JWT-based login and registration.
+The application follows a **Microservices-ready** architecture, fully containerized with Docker:
 
-## Tech Stack
+*   **Frontend**: React (Vite) + TypeScript + TailwindCSS.
+*   **Backend**: Python (Flask) + Gunicorn + SQLAlchemy.
+*   **Database**: PostgreSQL (Production) / SQLite (Development fallback).
+*   **AI Engine**: Custom Sentiment Analysis Model (`scikit-learn` + `TF-IDF`) + Google Gemini (LLM).
 
-- **Frontend**: React, TypeScript, Vite, TailwindCSS (presumed), Recharts (Analytics).
-- **Backend**: Flask, SQLAlchemy (SQLite), Scikit-learn (Sentiment Model).
+## ✨ Key Features
 
-## Installation
+*   **Real-time Sentiment Analysis**: Analyzes user mood instantly (Positive/Negative/Neutral).
+*   **Dynamic Response System**: Responses are fetched from the database, allowing admin updates without code deploys.
+*   **Security First**: Rate limiting, Secure Headers, and JWT-ready architecture.
+*   **Persistent Sessions**: Chat history is saved to PostgreSQL, with session limits (20/day) enforced.
+*   **Modern UI**: Glassmorphism, smooth animations, and responsive design.
+
+## 🚀 Getting Started (The Easy Way)
+
+We recommend using **Docker** for a consistent environment.
 
 ### Prerequisites
-- Node.js & npm
-- Python 3.10+
+*   Docker Desktop installed and running.
+*   Google Gemini API Key (for LLM features).
 
-### Local Development
+### 1. Configure Environment
+Create a `.env` file in the `backend/` directory (or rely on defaults/Docker envs):
+```bash
+# backend/.env
+GEMINI_API_KEY=your_key_here
+```
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/yourusername/context-aware-sentiment-chatbot.git
-    cd context-aware-sentiment-chatbot
-    ```
+### 2. Run with Docker Compose
+This command builds the frontend, backend, and database containers and connects them:
+```bash
+docker-compose up --build
+```
+*   **Frontend**: `http://localhost:3000`
+*   **Backend**: `http://localhost:5001`
+*   **Database**: Port `5435` (mapped locally to avoid conflicts).
 
-2.  **Backend Setup**:
-    ```bash
-    cd backend
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    pip install -r requirements.txt
-    
-    # Run the server
-    python app.py
-    ```
-    Backend runs on `http://localhost:5001`.
+### 3. Seed the Database
+Crucial Step! The database starts empty. Run this connection command **once** to populate response templates:
+```bash
+docker-compose exec backend python seed_templates.py
+```
+> You should see: "Successfully added 90 templates."
 
-3.  **Frontend Setup**:
-    ```bash
-    cd frontend
-    npm install
-    
-    # Run the dev server
-    npm run dev
-    ```
-    Frontend runs on `http://localhost:3000`.
+---
 
-## Deployment (Optional)
+## 🛠 Manual Setup (Without Docker)
 
-- **Render & Vercel**: See [DEPLOYMENT_RENDER_VERCEL.md](DEPLOYMENT_RENDER_VERCEL.md) for a production-ready cloud setup.
+If you prefer running services individually:
 
-## Configuration
+### Backend
+1.  Navigate to `backend/`.
+2.  Install dependencies: `pip install -r requirements.txt`.
+3.  Run the server: `python app.py`.
+4.  Seed DB: `python seed_templates.py`.
 
-Security is handled via environment variables (defaults provided for local dev).
+### Frontend
+1.  Navigate to `frontend/`.
+2.  Install dependencies: `npm install`.
+3.  Run the dev server: `npm run dev`.
 
-### Variables
-| Variable | Description | Default (Local) |
-|----------|-------------|---------------|
-| `SECRET_KEY` | Secures sessions & tokens | `dev_secret_key_local_fallback` |
-| `FLASK_ENV` | Toggle Debug/Prod mode | `development` |
-| `GEMINI_API_KEY` | (Optional) For AI features | User Provided |
+---
 
-## Usage
+## 🧪 Testing
 
-1.  **Register/Login**: Create an account to start.
-2.  **Chat**: Type messages to interact. The bot will analyze your sentiment.
-3.  **Analytics**: View real-time sentiment scores and session history.
+We use **pytest** for backend unit testing.
+```bash
+# Run tests inside the container
+docker-compose exec backend pytest
+```
+
+## 📦 Deployment
+
+See [DEPLOYMENT_RENDER_VERCEL.md](./DEPLOYMENT_RENDER_VERCEL.md) for detailed instructions on deploying to **Render (Backend)** and **Vercel (Frontend)**.
