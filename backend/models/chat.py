@@ -1,19 +1,10 @@
 from extensions import db
 from datetime import datetime, timezone
 
-# db = SQLAlchemy() # Removed, imported from extensions
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    sessions = db.relationship('ChatSession', backref='user', lazy=True)
-
 class ChatSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # Session Metadata
@@ -25,9 +16,10 @@ class ChatSession(db.Model):
     overall_mood = db.Column(db.String(20), default='Neutral')
     trend = db.Column(db.String(20), default='Stable')
     
-    # Store raw stats JSON if needed for detailed charts later
-    # For SQLite, we can store as Text (JSON string)
-    summary_data = db.Column(db.Text, nullable=True) 
+    # Updated: Store raw stats JSON using JSON type (works with Postgres)
+    # SQLAlchemy's JSON type maps to TEXT in SQLite automatically if needed, 
+    # but uses native JSON/JSONB in Postgres.
+    summary_data = db.Column(db.JSON, nullable=True) 
     
     messages = db.relationship('Message', backref='session', lazy=True, cascade="all, delete-orphan")
 
@@ -63,4 +55,18 @@ class Message(db.Model):
                 'label': self.sentiment_label
             } if self.sentiment_score is not None else None,
             'timestamp': self.timestamp.isoformat()
+        }
+
+class ResponseTemplate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    overall_mood = db.Column(db.String(20), nullable=False) # e.g., 'Positive', 'Negative', 'Neutral'
+    user_sentiment = db.Column(db.String(20), nullable=False) # e.g., 'Positive', 'Negative', 'Neutral'
+    content = db.Column(db.Text, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'overall_mood': self.overall_mood,
+            'user_sentiment': self.user_sentiment,
+            'content': self.content
         }

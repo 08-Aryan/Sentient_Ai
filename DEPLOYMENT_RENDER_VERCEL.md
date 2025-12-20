@@ -31,6 +31,7 @@ Ensure all your specific configuration changes (like the recent `vercel.json` ad
     -   `SECRET_KEY`: (Generate a random string)
     -   `PYTHON_VERSION`: `3.10.12` (Recommended)
     -   `CORS_ORIGINS`: `*` (Temporarily, we will lock this down to the Vercel URL later).
+    -   `GUNICORN_WORKERS`: `2` (Optional, defaults to 2).
 5.  **Create Service**: Click **Create Web Service**.
 
 ### Add Database (Crucial for Persistence)

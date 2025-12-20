@@ -1,13 +1,14 @@
 from flask import Blueprint, request, jsonify, make_response, current_app
 import jwt
 import datetime
-from extensions import db, bcrypt
+from extensions import db, bcrypt, limiter
 from models import User
 from utils.decorators import token_required
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def register():
     data = request.get_json()
     username = data.get('username')
@@ -32,6 +33,7 @@ def register():
     return jsonify({'message': 'User registered successfully'}), 201
 
 @auth_bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     data = request.get_json()
     username = data.get('username')

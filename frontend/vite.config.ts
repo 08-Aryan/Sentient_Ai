@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
         '/chat': 'http://127.0.0.1:5001',
         '/auth': 'http://127.0.0.1:5001',
         '/predict': 'http://127.0.0.1:5001',
+        '/config': 'http://127.0.0.1:5001',
       }
     },
     plugins: [react()],

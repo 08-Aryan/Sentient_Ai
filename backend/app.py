@@ -2,14 +2,18 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import Config
-from extensions import db, bcrypt
+from extensions import db, bcrypt, limiter
 from routes.auth import auth_bp
 from routes.chat import chat_bp
 from routes.main import main_bp
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    
+    if test_config:
+        app.config.update(test_config)
+    else:
+        app.config.from_object(Config)
 
     # Initialize Extensions
     # Load allowed origins from env, default to localhost
@@ -18,6 +22,7 @@ def create_app():
     
     db.init_app(app)
     bcrypt.init_app(app)
+    limiter.init_app(app)
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -35,11 +40,15 @@ def create_app():
 
     # Create Tables
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception as e:
+            # Log warning but don't crash app creation (useful for tests/builds)
+            print(f"DB access warning during app creation: {e}")
 
     return app
 
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true')

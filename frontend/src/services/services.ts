@@ -1,6 +1,6 @@
 import { SentimentLabel, SentimentResult } from "../types";
 // import { analyzeLocalSentiment } from "../utils/sentimentLexicon";
-import { getLocalBotReply } from "../utils/responseTemplates";
+import { selectTemplate, TemplateLibrary } from "../utils/chatUtils";
 import { api } from "./api";
 
 /**
@@ -50,7 +50,8 @@ export const generateBotReply = async (
   // even though the local logic calculates context via 'overallMoodScore'.
   chatHistory: any[],
   overallMoodScore: number,
-  currentSentiment: SentimentResult
+  currentSentiment: SentimentResult,
+  templates: TemplateLibrary | null
 ): Promise<string> => {
 
   // A. Use the provided sentiment
@@ -63,11 +64,12 @@ export const generateBotReply = async (
   else if (overallMoodScore <= -0.05) overallMoodLabel = SentimentLabel.NEGATIVE;
 
   // C. Generate Local Reply
-  // We pass: Current Input + Current Sentiment + Overall History Mood
-  const reply = getLocalBotReply(
+  // We pass: Current Input + Current Sentiment + Overall History Mood + Templates
+  const reply = selectTemplate(
     userText,
     currentSentiment.label,
-    overallMoodLabel
+    overallMoodLabel,
+    templates
   );
 
   // Artificial Delay: Simulates typing/thinking time (800ms)

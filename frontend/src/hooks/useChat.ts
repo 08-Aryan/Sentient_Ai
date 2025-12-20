@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Message, ConversationStats } from '../types';
 import { analyzeSentiment, generateBotReply } from '../services/services';
 import { api } from '../services/api';
 import { calculateConversationStats } from '../utils/analytics';
-import { detectIntent, CAPABILITY_RESPONSE, GENERIC_FAREWELLS } from '../utils/responseTemplates';
+// import { detectIntent, CAPABILITY_RESPONSE, GENERIC_FAREWELLS } from '../utils/responseTemplates'; -- REMOVED
+import { detectIntent, CAPABILITY_RESPONSE, GENERIC_FAREWELLS, TemplateLibrary } from '../utils/chatUtils';
 
 const INITIAL_MESSAGE: Message = {
     id: 'init',
@@ -16,6 +17,24 @@ export const useChat = (onEndChat: () => void) => {
     const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
     const [botStatus, setBotStatus] = useState<'idle' | 'analyzing' | 'typing'>('idle');
     const [sessionId, setSessionId] = useState<string | null>(null);
+    const [limits, setLimits] = useState<{ daily_sessions: number, session_messages: number } | null>(null);
+    const [templates, setTemplates] = useState<TemplateLibrary | null>(null);
+
+    // Fetch config and templates on mount
+    useEffect(() => {
+        const fetchConfigAndTemplates = async () => {
+            try {
+                const config = await api.getConfig();
+                setLimits(config.limits);
+
+                const tmpls = await api.getTemplates();
+                setTemplates(tmpls);
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+            }
+        };
+        fetchConfigAndTemplates();
+    }, []);
 
     const handleSendMessage = useCallback(async (text: string, remainingSessions: number | null) => {
         if (!text.trim() || botStatus !== 'idle') return;
@@ -114,7 +133,8 @@ export const useChat = (onEndChat: () => void) => {
                 text,
                 geminiHistory,
                 newStats.averageScore,
-                sentiment
+                sentiment,
+                templates
             );
 
             const botMsg: Message = {
@@ -135,9 +155,11 @@ export const useChat = (onEndChat: () => void) => {
             setMessages(prev => prev.filter(msg => msg.id !== tempId));
 
             if (error.message === 'Daily limit reached') {
-                alert("You have reached your daily limit of 20 sessions.");
+                const limit = limits?.daily_sessions || 20; // Fallback only if fetch failed
+                alert(`You have reached your daily limit of ${limit} sessions.`);
             } else if (error.message === 'Session message limit reached') {
-                alert("You have reached the message limit for this session.");
+                const limit = limits?.session_messages || 250;
+                alert(`You have reached the message limit of ${limit} for this session.`);
             } else {
                 alert("Failed to send message. Please try again.");
             }
@@ -145,7 +167,7 @@ export const useChat = (onEndChat: () => void) => {
         } finally {
             setBotStatus('idle');
         }
-    }, [botStatus, messages, onEndChat, sessionId]);
+    }, [botStatus, messages, onEndChat, sessionId, limits]);
 
     const restartChat = () => {
         setMessages([INITIAL_MESSAGE]);

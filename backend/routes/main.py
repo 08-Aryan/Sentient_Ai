@@ -3,12 +3,22 @@ from datetime import datetime, timezone, time
 from services.sentiment import sentiment_service
 from utils.decorators import token_required
 from models import ChatSession
+from config import Config
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'online', 'model_loaded': sentiment_service.model is not None})
+
+@main_bp.route('/config', methods=['GET'])
+def get_config():
+    return jsonify({
+        'limits': {
+            'daily_sessions': Config.DAILY_SESSION_LIMIT,
+            'session_messages': Config.SESSION_MESSAGE_LIMIT
+        }
+    })
 
 @main_bp.route('/predict', methods=['POST'])
 @token_required
@@ -22,7 +32,7 @@ def predict(current_user):
     ).count()
 
     # Soft check, frontend handles blocking mostly
-    if session_count >= 20:
+    if session_count >= Config.DAILY_SESSION_LIMIT:
         return jsonify({'error': 'Daily limit reached'}), 403
 
     try:

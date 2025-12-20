@@ -2,25 +2,48 @@ from flask import Blueprint, request, jsonify
 from utils.decorators import token_required
 from services.chat_service import ChatService
 
+from config import Config
+
 chat_bp = Blueprint('chat', __name__)
 
 @chat_bp.route('/check-limit', methods=['GET'])
 @token_required
 def check_limit(current_user):
     session_count = ChatService.get_daily_session_count(current_user.id)
-    remaining = 20 - session_count
-    return jsonify({'remaining': remaining, 'limit': 20})
+    remaining = Config.DAILY_SESSION_LIMIT - session_count
+    return jsonify({'remaining': remaining, 'limit': Config.DAILY_SESSION_LIMIT})
+
+@chat_bp.route('/templates', methods=['GET'])
+def get_templates():
+    # Return grouped templates for frontend caching
+    # This public endpoint (or token protected) lets frontend fetch all logic
+    try:
+        from models import ResponseTemplate
+        templates = ResponseTemplate.query.all()
+        # Group by overall_mood -> user_sentiment -> [messages]
+        result = {}
+        for t in templates:
+            if t.overall_mood not in result:
+                result[t.overall_mood] = {}
+            if t.user_sentiment not in result[t.overall_mood]:
+                result[t.overall_mood][t.user_sentiment] = []
+            
+            result[t.overall_mood][t.user_sentiment].append(t.content)
+            
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/start', methods=['POST'])
 @token_required
 def start_chat(current_user):
-    session_count = ChatService.get_daily_session_count(current_user.id)
-
-    if session_count >= 20:
-        return jsonify({'error': 'Daily limit reached'}), 403
-
-    new_session = ChatService.create_session(current_user.id)
-    return jsonify({'session_id': new_session.id, 'message': 'Session started'})
+    try:
+        new_session = ChatService.create_session(current_user.id)
+        return jsonify({'session_id': new_session.id, 'message': 'Session started'})
+    except Exception as e:
+        if str(e) == 'Daily limit reached':
+             return jsonify({'error': 'Daily limit reached'}), 403
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/message', methods=['POST'])
 @token_required
@@ -39,7 +62,7 @@ def save_message(current_user):
         return jsonify({'error': 'Unauthorized or Session not found'}), 403
 
     # Check session message limit
-    if session.total_messages >= 250:
+    if session.total_messages >= Config.SESSION_MESSAGE_LIMIT:
         return jsonify({'error': 'Session message limit reached'}), 403
 
     try:

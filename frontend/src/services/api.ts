@@ -22,6 +22,11 @@ export const api = {
         return handleResponse(res);
     },
 
+    getConfig: async () => {
+        const res = await fetch(`${API_URL}/config`, { credentials: 'include' });
+        return handleResponse(res);
+    },
+
     startChat: async () => {
         const res = await fetch(`${API_URL}/chat/start`, {
             method: 'POST',
@@ -66,6 +71,11 @@ export const api = {
 
     getSessionMessages: async (sessionId: string) => {
         const res = await fetch(`${API_URL}/chat/session/${sessionId}`, { credentials: 'include' });
+        return handleResponse(res);
+    },
+
+    getTemplates: async () => {
+        const res = await fetch(`${API_URL}/chat/templates`, { credentials: 'include' });
         return handleResponse(res);
     },
 

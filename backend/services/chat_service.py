@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, time
-from extensions import db
+from extensions import db, bcrypt
 from models import ChatSession, Message
+from config import Config
 
 class ChatService:
     @staticmethod
@@ -14,6 +15,20 @@ class ChatService:
 
     @staticmethod
     def create_session(user_id):
+        # Transactional checking would require stricter isolation levels
+        # For now, we check immediately before write to minimize race window
+        today = datetime.now(timezone.utc).date()
+        start_of_day = datetime.combine(today, time.min)
+        
+        # Count existing sessions for today
+        count = ChatSession.query.filter(
+            ChatSession.user_id == user_id,
+            ChatSession.created_at >= start_of_day
+        ).count()
+
+        if count >= Config.DAILY_SESSION_LIMIT:
+             raise Exception('Daily limit reached')
+
         try:
             new_session = ChatSession(
                 user_id=user_id,
@@ -68,7 +83,8 @@ class ChatService:
         session.average_score = data.get('averageScore', session.average_score)
         session.overall_mood = data.get('overallMood', session.overall_mood)
         session.trend = data.get('trend', session.trend)
-        session.summary_data = str(data)
+        # Directly assign JSON data, SQLAlchemy handles serialization for JSON type
+        session.summary_data = data 
         db.session.commit()
 
     @staticmethod

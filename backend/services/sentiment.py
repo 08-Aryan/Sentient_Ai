@@ -2,7 +2,12 @@ import joblib
 import re
 import numpy as np
 import os
+import logging
 from config import Config
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class SentimentService:
     def __init__(self):
@@ -16,13 +21,13 @@ class SentimentService:
             if not os.path.exists(Config.ARTIFACT_PATH):
                 raise FileNotFoundError(f"Artifact file '{Config.ARTIFACT_PATH}' not found.")
 
-            print("Loading model artifacts...")
+            logger.info("Loading model artifacts...")
             artifacts = joblib.load(Config.ARTIFACT_PATH)
             self.model = artifacts['model']
             self.vectorizer = artifacts['vectorizer']
-            print("Model and Vectorizer loaded successfully.")
+            logger.info("Model and Vectorizer loaded successfully.")
         except Exception as e:
-            print(f"ERROR: Failed to load artifacts: {e}")
+            logger.error(f"Failed to load artifacts: {e}")
             self.model = None
             self.vectorizer = None
 
